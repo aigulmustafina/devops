@@ -1,0 +1,13 @@
+---
+- hosts: lb
+  become: true
+  vars_files:
+    - "nginx_secret_token.yaml"
+  roles:
+    - nginx
+    - nginx-configuration
+
+- hosts: app
+  become: true
+  roles:
+    - application

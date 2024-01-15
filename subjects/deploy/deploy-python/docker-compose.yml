@@ -1,0 +1,13 @@
+services:
+  demo:
+    build: .
+    container_name: deploy-python-demo
+    restart: always
+  nginx:
+    image: nginx:mainline
+    container_name: deploy-python-nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy-python.conf:/etc/nginx/conf.d/default.conf

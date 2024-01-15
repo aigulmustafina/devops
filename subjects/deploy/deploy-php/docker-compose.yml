@@ -1,0 +1,7 @@
+services:
+  winter:
+    build: .
+    container_name: deploy-php-winter
+    restart: always
+    ports:
+      - "80:80"

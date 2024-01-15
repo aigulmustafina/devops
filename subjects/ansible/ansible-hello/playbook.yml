@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+    - name: Убедиться, что пакет chrony установлен
+      apt:
+        name: chrony
+        state: present
+
+    - name: Убедиться, что сервис chrony запущен
+      service:
+        name: chronyd
+        state: started
+        enabled: yes

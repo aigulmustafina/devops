@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    container_name: deploy-maven-app
+    restart: always
+  nginx:
+    image: nginx:mainline
+    container_name: deploy-maven-nginx
+    restart: always
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy-maven.conf:/etc/nginx/conf.d/default.conf

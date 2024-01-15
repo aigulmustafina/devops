@@ -1,0 +1,11 @@
+server {
+    listen {{ server_port }};
+
+    server_name {{ server_name }};
+
+    {% for item in locations %}
+    location {{ item.path }} {
+        return {{ item.status_code }} '{{ item.message }}';
+    }
+    {% endfor %}
+}

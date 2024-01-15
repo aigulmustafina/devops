@@ -1,0 +1,17 @@
+services:
+  api:
+    image: "jusan-fastapi-final:dockerized"
+    container_name: "jusan-compose-final"
+    restart: always
+  nginx:
+    image: "nginx:mainline"
+    ports:
+      - "8787:80"
+    depends_on:
+      - api
+    volumes:
+      - ./jusan-docker-mount:/var/www/example
+      - ./jusan-docker-mount.conf:/etc/nginx/conf.d/jusan-docker-mount.conf
+      - ./jusan-fastapi-final.conf:/etc/nginx/conf.d/jusan-fastapi-final.conf
+    restart: always
+    container_name: jusan-nginx-final

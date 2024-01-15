@@ -1,0 +1,95 @@
+---
+- hosts: lb
+  become: true
+
+  tasks:
+    - name: Установка nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Копирование nginx.conf
+      copy:
+        src: nginx.conf
+        dest: /etc/nginx/nginx.conf
+      notify: reload-nginx
+
+    - name: Удаление default.conf у сервиса nginx
+      file:
+        path: /etc/nginx/sites-enabled/default.conf
+        state: absent
+
+    - name: Копирование server.conf
+      template:
+        src: "server.conf.j2"
+        dest: "/etc/nginx/conf.d/{{ item.server_name }}.conf"
+      vars:
+        server_port: "{{ item.server_port }}"
+        server_name: "{{ item.server_name }}"
+        locations: "{{ item.locations }}"
+      loop:
+        - server_port: 7070
+          server_name: jmart-ansible.kz
+          locations:
+            - path: /main
+              status_code: 200
+              message: Добро пожаловать на JMart!
+            - path: /profile
+              status_code: 201
+              message: Это страница профиля.
+        - server_port: 8080
+          server_name: jusan-ansible.kz
+          locations:
+            - path: /
+              status_code: 200
+              message: Добро пожаловать на Jusan Bank!
+            - path: /account
+              status_code: 202
+              message: Здесь ваш банковский счет!
+        - server_port: 9090
+          server_name: invest-ansible.kz
+          locations:
+            - path: /home
+              status_code: 200
+              message: Добро пожаловать на Jusan Invest!
+            - path: /user
+              status_code: 203
+              message: Это страница с вашим брокерским счетом.
+      notify: reload-nginx
+
+    - name: Генерация app.conf
+      template:
+        src: "app.conf.j2"
+        dest: "/etc/nginx/conf.d/app.conf"
+      vars:
+        server_port: 80
+        server_name: jusan-apps.kz
+        apps:
+          - local-vps-23:9090
+          - local-vps-24:9090
+      notify: reload-nginx
+
+  handlers:
+    - name: reload-nginx
+      service:
+        name: nginx
+        state: reloaded
+
+- hosts: app
+  become: true
+
+  tasks:
+    - name: Загрузка бинарника api
+      get_url:
+        url: https://github.com/jusan-singularity/track-devops-systemd-api/releases/download/v0.1/api
+        dest: /tmp/api
+        mode: 0755
+    - name: Копирование api.service
+      copy:
+        src: "api.service"
+        dest: "/lib/systemd/system/api.service"
+    - name: Запуск api.service
+      service:
+        name: api.service
+        state: started

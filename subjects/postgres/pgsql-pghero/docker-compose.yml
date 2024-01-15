@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    container_name: jusan-postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./migrate_db.sh:/docker-entrypoint-initdb.d/migrate_db.sh
+      - ./dump.sql:/backup/dump.sql
+    command: >
+      -c shared_preload_libraries='pg_stat_statements'
+      -c pg_stat_statements.track=all
+      -c pg_stat_statements.max=10000
+      -c track_activity_query_size=2048
+  pghero:
+    image: ankane/pghero:v2.8.2
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://pghero:pghero_password@postgres:5432/deadline
+    depends_on:
+      - postgres
+    container_name: jusan-pghero
